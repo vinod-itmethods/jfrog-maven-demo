@@ -42,24 +42,11 @@ jobs:
       - name: Verify JFrog Configuration
         run: jfrog config show
 
-      - name: Set Up Maven Configuration
+      - name: Set Up Maven Configuration (for deployment only)
         run: |
           mkdir -p ~/.m2
           echo '<settings>
-                  <mirrors>
-                    <mirror>
-                      <id>artifactory-maven-central</id>
-                      <mirrorOf>central</mirrorOf>
-                      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central-cache/</url>
-                      <layout>default</layout>
-                    </mirror>
-                  </mirrors>
                   <servers>
-                    <server>
-                      <id>artifactory-maven-central</id>
-                      <username>${{ secrets.JFROG_USER }}</username>
-                      <password>${{ secrets.JFROG_TOKEN }}</password>
-                    </server>
                     <server>
                       <id>artifactory</id>
                       <username>${{ secrets.JFROG_USER }}</username>

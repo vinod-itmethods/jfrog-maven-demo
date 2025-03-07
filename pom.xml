@@ -11,13 +11,11 @@
     <name>maven-demo</name>
     <description>A simple Maven demo project for JFrog Artifactory</description>
 
+    <!-- Use PUBLIC Maven Central Repository -->
     <repositories>
-        <!-- Use Artifactory's remote Maven Central repository -->
         <repository>
-            <id>artifactory-maven-central</id>
-            <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central/</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
         </repository>
     </repositories>
 
@@ -41,7 +39,7 @@
     </build>
 
     <dependencies>
-        <!-- Example dependency to ensure Artifactory is used -->
+        <!-- Example dependency from public Maven Central -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
