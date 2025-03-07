@@ -50,7 +50,7 @@ jobs:
                     <mirror>
                       <id>artifactory-maven-central</id>
                       <mirrorOf>central</mirrorOf>
-                      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central/</url>
+                      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central-cache/</url>
                       <layout>default</layout>
                     </mirror>
                   </mirrors>
