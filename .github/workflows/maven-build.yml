@@ -1,8 +1,12 @@
-name: Maven Build and Publish
+name: Maven Build and Publish to Artifactory
 
 on:
   push:
     branches: [main]
+
+permissions:
+  contents: read  # Allow read access to repo
+  id-token: write # Allow OIDC authentication if needed
 
 jobs:
   build:
@@ -18,10 +22,29 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Configure Maven with Artifactory Token
+      - name: Configure Maven with Artifactory
         run: |
           mkdir -p ~/.m2
-          echo "<settings><servers><server><id>artifactory</id><username>${{ secrets.JFROG_USER }}</username><password>${{ secrets.JFROG_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+          echo '<settings>
+                  <mirrors>
+                    <mirror>
+                      <id>artifactory-maven-central</id>
+                      <mirrorOf>central</mirrorOf>
+                      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central/</url>
+                      <layout>default</layout>
+                    </mirror>
+                  </mirrors>
+                  <servers>
+                    <server>
+                      <id>artifactory</id>
+                      <username>${{ secrets.JFROG_USER }}</username>
+                      <password>${{ secrets.JFROG_TOKEN }}</password>
+                    </server>
+                  </servers>
+                </settings>' > ~/.m2/settings.xml
 
-      - name: Build and Deploy
-        run: mvn clean install deploy -DaltDeploymentRepository=artifactory::default::https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-dev
+      - name: Build Project
+        run: mvn clean install
+
+      - name: Deploy to Artifactory
+        run: mvn deploy -DaltDeploymentRepository=artifactory::default::https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-dev
