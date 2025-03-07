@@ -22,7 +22,21 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Configure Maven with Artifactory
+      - name: Install JFrog CLI
+        run: |
+          curl -fL https://getcli.jfrog.io | sh
+          chmod +x jfrog
+          mv jfrog /usr/local/bin/
+
+      - name: Authenticate JFrog CLI
+        run: |
+          jfrog config add my-artifactory \
+            --url=https://artifactory.stage.0658b-techopscore.com \
+            --user=${{ secrets.JFROG_USER }} \
+            --password=${{ secrets.JFROG_TOKEN }} \
+            --interactive=false
+
+      - name: Set Up Maven Configuration
         run: |
           mkdir -p ~/.m2
           echo '<settings>
@@ -36,6 +50,11 @@ jobs:
                   </mirrors>
                   <servers>
                     <server>
+                      <id>artifactory-maven-central</id>
+                      <username>${{ secrets.JFROG_USER }}</username>
+                      <password>${{ secrets.JFROG_TOKEN }}</password>
+                    </server>
+                    <server>
                       <id>artifactory</id>
                       <username>${{ secrets.JFROG_USER }}</username>
                       <password>${{ secrets.JFROG_TOKEN }}</password>
@@ -46,5 +65,6 @@ jobs:
       - name: Build Project
         run: mvn clean install
 
-      - name: Deploy to Artifactory
-        run: mvn deploy -DaltDeploymentRepository=artifactory::default::https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-dev
+      - name: Deploy to Artifactory using JFrog CLI
+        run: |
+          jfrog rt upload "target/*.jar" "maven-appcode-dev/"
