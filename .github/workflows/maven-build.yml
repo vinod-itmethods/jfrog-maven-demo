@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 permissions:
-  contents: read  # Allow read access to repo
-  id-token: write # Allow OIDC authentication if needed
+  contents: read  
+  id-token: write  
 
 jobs:
   build:
@@ -28,13 +28,16 @@ jobs:
           chmod +x jfrog
           mv jfrog /usr/local/bin/
 
-      - name: Authenticate JFrog CLI
+      - name: Authenticate JFrog CLI using Environment Variables
         run: |
-          jfrog config add my-artifactory \
-            --url=https://artifactory.stage.0658b-techopscore.com \
-            --user=${{ secrets.JFROG_USER }} \
-            --password=${{ secrets.JFROG_TOKEN }} \
-            --interactive=false
+          export JFROG_CLI_OFFER_CONFIG=false
+          export JFROG_CLI_LOG_LEVEL=INFO
+          export JFROG_CLI_SERVER_ID=my-artifactory
+          export JFROG_CLI_URL=https://artifactory.stage.0658b-techopscore.com
+          export JFROG_CLI_USER=${{ secrets.JFROG_USER }}
+          export JFROG_CLI_PASSWORD=${{ secrets.JFROG_TOKEN }}
+          export JFROG_CLI_BUILD_NAME=maven-build
+          jfrog config use my-artifactory
 
       - name: Set Up Maven Configuration
         run: |
@@ -66,5 +69,4 @@ jobs:
         run: mvn clean install
 
       - name: Deploy to Artifactory using JFrog CLI
-        run: |
-          jfrog rt upload "target/*.jar" "maven-appcode-dev/"
+        run: jfrog rt upload "target/*.jar" "maven-appcode-dev/"
