@@ -28,13 +28,15 @@ jobs:
           chmod +x jfrog
           mv jfrog /usr/local/bin/
 
-      - name: Authenticate JFrog CLI (Add Server ID)
+      - name: Authenticate JFrog CLI Using Access Token
+        env:
+          JFROG_USER: ${{ secrets.JFROG_USER }}
+          JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
         run: |
           export JFROG_CLI_OFFER_CONFIG=false
           jfrog config add my-artifactory \
             --url=https://artifactory.stage.0658b-techopscore.com \
-            --user=${{ secrets.JFROG_USER }} \
-            --password=${{ secrets.JFROG_TOKEN }} \
+            --access-token=$JFROG_TOKEN \
             --interactive=false
 
       - name: Verify JFrog Configuration
