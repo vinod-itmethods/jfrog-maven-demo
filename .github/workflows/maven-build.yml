@@ -38,6 +38,12 @@ jobs:
             echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
             echo "🔹 Debug: Access Token Length = ${#ACCESS_TOKEN}"
 
+      - name: Debug GitHub OIDC Token
+        run: |
+            echo "🔹 Debugging GitHub OIDC Token..."
+            echo "ID_TOKEN=${ID_TOKEN}"
+      
+
       - name: Debug JFrog Authentication
         run: |
           curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://artifactory.stage.0658b-techopscore.com/artifactory/api/system/ping"
