@@ -1,49 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
     <artifactId>maven-demo</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
 
-    <name>maven-demo</name>
-    <description>A simple Maven demo project for JFrog Artifactory</description>
-
-    <!-- Use PUBLIC Maven Central Repository -->
     <repositories>
         <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2/</url>
+            <id>artifactory-maven-central</id>
+            <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
         </repository>
     </repositories>
 
     <distributionManagement>
-        <!-- Publish built artifacts to Artifactory -->
         <repository>
             <id>artifactory</id>
             <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-dev</url>
         </repository>
     </distributionManagement>
-
-    <build>
-        <plugins>
-            <!-- Maven Deploy Plugin for uploading artifacts -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
-            </plugin>
-        </plugins>
-    </build>
-
-    <dependencies>
-        <!-- Example dependency from public Maven Central -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-        </dependency>
-    </dependencies>
 </project>

@@ -1,12 +1,12 @@
-name: Maven Build and Publish to Artifactory
+name: Maven OIDC Authentication
 
 on:
   push:
     branches: [main]
 
 permissions:
+  id-token: write   # REQUIRED for OIDC authentication
   contents: read  
-  id-token: write  
 
 jobs:
   build:
@@ -16,47 +16,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-
-      - name: Install JFrog CLI
+      - name: Get ID Token from GitHub
         run: |
-          curl -fL https://getcli.jfrog.io | sh
-          chmod +x jfrog
-          mv jfrog /usr/local/bin/
+            ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}" | jq .value | tr -d '"')
+            echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
+            echo "✅ GitHub OIDC Token received."
 
-      - name: Authenticate JFrog CLI Using Access Token
+      - name: Exchange ID Token for JFrog Access Token
         env:
-          JFROG_USER: ${{ secrets.JFROG_USER }}
-          JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
+            ID_TOKEN: ${{ env.ID_TOKEN }}
+            JFROG_PLATFORM_URL: https://artifactory.stage.0658b-techopscore.com
         run: |
-          export JFROG_CLI_OFFER_CONFIG=false
-          jfrog config add my-artifactory \
-            --url=https://artifactory.stage.0658b-techopscore.com \
-            --access-token=$JFROG_TOKEN \
-            --interactive=false
+            ACCESS_TOKEN=$(curl -XPOST -H "Content-Type: application/json" \
+              "${JFROG_PLATFORM_URL}/access/api/v1/oidc/token" \
+              -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"github-oidc\"}" | jq .access_token | tr -d '"')
+            echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
+            echo "✅ JFrog Access Token received."
 
-      - name: Verify JFrog Configuration
-        run: jfrog config show
-
-      - name: Set Up Maven Configuration (for deployment only)
+      - name: Set up Maven
         run: |
           mkdir -p ~/.m2
-          echo '<settings>
-                  <servers>
-                    <server>
-                      <id>artifactory</id>
-                      <username>${{ secrets.JFROG_USER }}</username>
-                      <password>${{ secrets.JFROG_TOKEN }}</password>
-                    </server>
-                  </servers>
-                </settings>' > ~/.m2/settings.xml
+          cp settings.xml ~/.m2/settings.xml
 
-      - name: Build Project
-        run: mvn clean install
-
-      - name: Deploy to Artifactory using JFrog CLI
-        run: jfrog rt upload "target/*.jar" "maven-appcode-dev/"
+      - name: Build and Deploy with Maven
+        run: mvn clean deploy -s ~/.m2/settings.xml
