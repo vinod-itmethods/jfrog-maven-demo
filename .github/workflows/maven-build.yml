@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 permissions:
+  contents: read
   id-token: write   # REQUIRED for OIDC authentication
-  contents: read  
 
 jobs:
   build:
@@ -18,40 +18,34 @@ jobs:
 
       - name: Get ID Token from GitHub
         run: |
-            ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}" | jq .value | tr -d '"')
-            echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
-            echo "✅ GitHub OIDC Token received."
+          ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sigstore" | jq .value | tr -d '"')
+          echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
+          echo "✅ GitHub OIDC Token received."
 
-      - name: Debug JFrog Token Exchange Response
+      - name: Exchange ID Token for JFrog Access Token
         env:
             ID_TOKEN: ${{ env.ID_TOKEN }}
             JFROG_PLATFORM_URL: https://artifactory.stage.0658b-techopscore.com
         run: |
-            echo "🔹 Debugging Token Exchange Response..."
+            echo "🔹 Fetching JFrog Access Token..."
+            
             RESPONSE=$(curl -XPOST -H "Content-Type: application/json" \
               "${JFROG_PLATFORM_URL}/access/api/v1/oidc/token" \
               -d "{\"grant_type\": \"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\": \"${ID_TOKEN}\", \"provider_name\": \"github-oidc\"}")
-      
+
             echo "🔹 Raw JFrog API Response: ${RESPONSE}"
-      
+
             ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
             echo "🔹 Access Token Length = ${#ACCESS_TOKEN}"
-      
+
             if [[ -z "$ACCESS_TOKEN" || "$ACCESS_TOKEN" == "null" ]]; then
               echo "❌ ERROR: Failed to get JFrog Access Token"
               exit 1
             fi
-      
+
             echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
             echo "✅ JFrog Access Token Stored."
-      
-
-      - name: Debug GitHub OIDC Token
-        run: |
-            echo "🔹 Debugging GitHub OIDC Token..."
-            echo "ID_TOKEN=${ID_TOKEN}"
-      
 
       - name: Debug JFrog Authentication
         run: |
