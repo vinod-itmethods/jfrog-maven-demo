@@ -35,8 +35,8 @@ jobs:
             echo "✅ JFrog Access Token received."
 
       - name: Debug JFrog Authentication
-        run: curl -H "Authorization: Bearer $ACCESS_TOKEN" \
-                 https://artifactory.stage.0658b-techopscore.com/artifactory/api/system/ping
+        run: |
+            curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://artifactory.stage.0658b-techopscore.com/artifactory/api/system/ping"
 
       - name: Set up Maven
         run: |
