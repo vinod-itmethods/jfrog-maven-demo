@@ -34,10 +34,14 @@ jobs:
             echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
             echo "✅ JFrog Access Token received."
 
+      - name: Debug JFrog Authentication
+        run: curl -H "Authorization: Bearer $ACCESS_TOKEN" \
+                 https://artifactory.stage.0658b-techopscore.com/artifactory/api/system/ping
+
       - name: Set up Maven
         run: |
           mkdir -p ~/.m2
-          cp settings.xml ~/.m2/settings.xml
+          echo "<settings><servers><server><id>artifactory</id><username>oidc</username><password>${ACCESS_TOKEN}</password></server></servers></settings>" > ~/.m2/settings.xml
 
       - name: Build and Deploy with Maven
         run: mvn clean deploy -s ~/.m2/settings.xml
