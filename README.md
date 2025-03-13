@@ -15,3 +15,6 @@ Benefits of OIDC Authentication in JFrog
 🔒 Improves security (Dynamic authentication, token-based access).
 🔄 Enforces least privilege access (GitHub Actions can access only authorized JFrog services).
 ⚡ Simplifies automation & CI/CD workflows.
+
+
+testing
