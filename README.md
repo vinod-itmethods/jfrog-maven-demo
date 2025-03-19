@@ -17,4 +17,3 @@ Benefits of OIDC Authentication in JFrog
 ⚡ Simplifies automation & CI/CD workflows.
 
 
-testing
