@@ -1,8 +1,9 @@
-name: Maven OIDC Authentication
+name: JFrog Maven OIDC Integration
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,15 +14,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Get ID Token from GitHub
+      - name: Get GitHub OIDC Token
         run: |
+          echo "🔹 Requesting OIDC Token..."
           ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
           "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sigstore" | jq .value | tr -d '"')
           echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
-          echo "✅ GitHub OIDC Token received."
+          echo "✅ OIDC Token Received."
 
       - name: Exchange ID Token for JFrog Access Token
         env:
@@ -51,10 +53,28 @@ jobs:
         run: |
           curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://artifactory.stage.0658b-techopscore.com/artifactory/api/system/ping"
 
-      - name: Set up Maven
+      - name: Setup JFrog CLI using Marketplace
+        uses: jfrog/setup-jfrog-cli@v3
+        env:
+          JF_URL: https://artifactory.stage.0658b-techopscore.com
+        with:
+          oidc-provider-name: github-oidc
+          version: latest
+
+      - name: Configure Maven for JFrog Authentication
         run: |
           mkdir -p ~/.m2
-          echo '<settings><servers><server><id>artifactory</id><username>oidc</username><password>'${ACCESS_TOKEN}'</password></server></servers></settings>' > ~/.m2/settings.xml
+          cat <<EOF > ~/.m2/settings.xml
+          <settings>
+            <servers>
+              <server>
+                <id>artifactory</id>
+                <username>dummy</username>
+                <password>${ACCESS_TOKEN}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
 
-      - name: Build and Deploy with Maven
-        run: mvn clean deploy -s ~/.m2/settings.xml
+      - name: Build and Deploy to JFrog Artifactory
+        run: mvn deploy -s ~/.m2/settings.xml
