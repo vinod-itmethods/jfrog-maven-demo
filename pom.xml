@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>com.example</groupId>
   <artifactId>maven-jfrog-demo</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
-
-  <name>maven-jfrog-demo</name>
-  <description>First-time Maven + JFrog project</description>
+  <name>Maven JFrog Demo</name>
+  <description>Sample Maven project with JFrog Artifactory integration</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,9 +17,37 @@
     <maven.compiler.target>17</maven.compiler.target>
   </properties>
 
+  <build>
+    <plugins>
+      <!-- Use working version to avoid Artifactory fetch issues -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.1.0</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.0.0-M1</version>
+      </plugin>
+    </plugins>
+  </build>
+
   <distributionManagement>
     <repository>
       <id>maven-appcode-releases</id>
+      <name>JFrog Release Repo</name>
       <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-releases</url>
     </repository>
   </distributionManagement>
@@ -31,4 +59,5 @@
       <version>3.12.0</version>
     </dependency>
   </dependencies>
+
 </project>
