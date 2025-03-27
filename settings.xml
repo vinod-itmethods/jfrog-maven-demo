@@ -1,16 +1,16 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-  
+
   <servers>
-    <!-- Auth for deploying to releases repo -->
+    <!-- For deploying releases -->
     <server>
       <id>maven-appcode-releases</id>
       <username>${env.ARTIFACTORY_USERNAME}</username>
       <password>${env.ARTIFACTORY_PASSWORD}</password>
     </server>
 
-    <!-- Auth for pulling from JFrog-hosted mirror of Maven Central -->
+    <!-- For downloading from Maven Central via JFrog -->
     <server>
       <id>maven-central</id>
       <username>${env.ARTIFACTORY_USERNAME}</username>
@@ -21,10 +21,35 @@
   <mirrors>
     <mirror>
       <id>maven-central</id>
-      <name>JFrog Maven Central Mirror</name>
+      <name>JFrog Mirror for Maven Central</name>
       <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
       <mirrorOf>central</mirrorOf>
     </mirror>
   </mirrors>
 
+  <profiles>
+    <profile>
+      <id>use-jfrog</id>
+      <repositories>
+        <repository>
+          <id>maven-central</id>
+          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>maven-central</id>
+          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>use-jfrog</activeProfile>
+  </activeProfiles>
 </settings>
