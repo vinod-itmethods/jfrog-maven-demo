@@ -17,8 +17,9 @@
 
     <distributionManagement>
         <repository>
-            <id>artifactory</id>
-            <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-dev</url>
+            <id>maven-appcode-releases</id>
+            <name>JFrog Release Repo</name>
+            <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-releases</url>
         </repository>
     </distributionManagement>
 </project>

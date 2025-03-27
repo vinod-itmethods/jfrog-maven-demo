@@ -1,4 +1,4 @@
-name: JFrog Maven OIDC Manual Integration
+name: Maven Build & Deploy to JFrog Artifactory (Fallback Auth)
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # Required for OIDC
 
 jobs:
   build:
@@ -17,49 +16,36 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Get GitHub OIDC Token
-        id: get-oidc
-        run: |
-          echo "🔹 Requesting GitHub OIDC Token..."
-          ID_TOKEN=$(curl -sLS -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sigstore" | jq -r .value)
-          echo "ID_TOKEN=${ID_TOKEN}" >> $GITHUB_ENV
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17' # or change to 11/21 based on your project
 
-      - name: Exchange OIDC Token for JFrog Access Token
-        id: exchange-jfrog
-        env:
-          ID_TOKEN: ${{ env.ID_TOKEN }}
-        run: |
-          echo "🔹 Exchanging OIDC Token with JFrog..."
-          RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
-            "https://artifactory.stage.0658b-techopscore.com/access/api/v1/oidc/token" \
-            -d "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\", \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\", \"subject_token\":\"${ID_TOKEN}\", \"provider_name\":\"github-oidc\"}")
-
-          echo "🔹 JFrog Response: $RESPONSE"
-          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
-
-          if [[ -z "$ACCESS_TOKEN" || "$ACCESS_TOKEN" == "null" ]]; then
-            echo "❌ Failed to obtain JFrog Access Token"
-            exit 1
-          fi
-
-          echo "::add-mask::$ACCESS_TOKEN"
-          echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> $GITHUB_ENV
-
-      - name: Set up Maven Settings
+      - name: Configure Maven settings for Artifactory and Central
         run: |
           mkdir -p ~/.m2
           cat <<EOF > ~/.m2/settings.xml
-          <settings>
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
             <servers>
               <server>
-                <id>artifactory</id>
-                <username>dummy</username>
-                <password>${ACCESS_TOKEN}</password>
+                <id>maven-appcode-releases</id>
+                <username>${{ secrets.ARTIFACTORY_USERNAME }}</username>
+                <password>${{ secrets.ARTIFACTORY_PASSWORD }}</password>
               </server>
             </servers>
+            <mirrors>
+              <mirror>
+                <id>maven-central</id>
+                <name>Maven Central via Artifactory</name>
+                <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
+                <mirrorOf>central</mirrorOf>
+              </mirror>
+            </mirrors>
           </settings>
           EOF
 
-      - name: Build & Deploy to Artifactory
+      - name: Build and Deploy to Artifactory
         run: mvn clean deploy -s ~/.m2/settings.xml
