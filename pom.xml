@@ -1,46 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>com.example</groupId>
-  <artifactId>maven-demo</artifactId>
+  <artifactId>maven-jfrog-demo</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
-  <name>Maven Demo</name>
-  <description>Sample Maven project integrated with JFrog Artifactory</description>
+
+  <name>maven-jfrog-demo</name>
+  <description>First-time Maven + JFrog project</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
   </properties>
-
-  <build>
-    <plugins>
-      <!-- Downgraded from 3.2.0 to 3.1.0 to avoid caching issue -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.1.0</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.10.1</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>3.0.0-M1</version>
-      </plugin>
-    </plugins>
-  </build>
 
   <distributionManagement>
     <repository>
@@ -50,12 +25,10 @@
   </distributionManagement>
 
   <dependencies>
-    <!-- Example dependency -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>
     </dependency>
   </dependencies>
-
 </project>

@@ -1,9 +1,8 @@
-name: Maven Build & Deploy to JFrog Artifactory (Fallback Auth)
+name: Maven CI with JFrog Artifactory
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -13,16 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17' # or change to 11/21 based on your project
+          java-version: '17'
 
-      - name: Configure Maven settings for Artifactory and Central
+      - name: Configure Maven for Artifactory
         run: |
           mkdir -p ~/.m2
           cat <<EOF > ~/.m2/settings.xml
@@ -35,17 +34,46 @@ jobs:
                 <username>${{ secrets.ARTIFACTORY_USERNAME }}</username>
                 <password>${{ secrets.ARTIFACTORY_PASSWORD }}</password>
               </server>
+              <server>
+                <id>maven-central</id>
+                <username>${{ secrets.ARTIFACTORY_USERNAME }}</username>
+                <password>${{ secrets.ARTIFACTORY_PASSWORD }}</password>
+              </server>
             </servers>
             <mirrors>
               <mirror>
                 <id>maven-central</id>
-                <name>Maven Central via Artifactory</name>
+                <name>JFrog Maven Central Proxy</name>
                 <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
                 <mirrorOf>central</mirrorOf>
               </mirror>
             </mirrors>
+            <profiles>
+              <profile>
+                <id>use-jfrog</id>
+                <repositories>
+                  <repository>
+                    <id>maven-central</id>
+                    <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                  </repository>
+                </repositories>
+                <pluginRepositories>
+                  <pluginRepository>
+                    <id>maven-central</id>
+                    <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                  </pluginRepository>
+                </pluginRepositories>
+              </profile>
+            </profiles>
+            <activeProfiles>
+              <activeProfile>use-jfrog</activeProfile>
+            </activeProfiles>
           </settings>
           EOF
 
-      - name: Build and Deploy to Artifactory
+      - name: Build and Deploy
         run: mvn clean deploy -s ~/.m2/settings.xml
