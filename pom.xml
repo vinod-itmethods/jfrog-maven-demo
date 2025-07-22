@@ -46,9 +46,9 @@
 
   <distributionManagement>
     <repository>
-      <id>maven-appcode-releases</id>
-      <name>JFrog Release Repo</name>
-      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-releases</url>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/vinod-itmethods/jfrog-maven-demo</url>
     </repository>
   </distributionManagement>
 
