@@ -29,8 +29,14 @@ jobs:
     - name: Run tests
       run: mvn test
 
-    - name: Deploy to GitHub Packages
-      run: mvn deploy --settings settings.xml
+    - name: Echo environment variables
+      run: |
+        echo "GITHUB_ACTOR=$GITHUB_ACTOR"
+        echo "GITHUB_TOKEN is set: [${{ secrets.GITHUB_TOKEN != '' }}]"
+        ls -l settings.xml
+
+    - name: Deploy to GitHub Packages (debug)
+      run: mvn deploy -X --settings settings.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_ACTOR: ${{ github.actor }} 
