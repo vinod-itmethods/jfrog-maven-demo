@@ -1,6 +1,6 @@
 # jfrog-maven-demo
 MAVEN demo repo pulling and publishing to Jfrog Artifactory
-
+test
 
 🛠️ Configured JFrog Repositories
 1️⃣ Maven (maven-appcode-dev)
