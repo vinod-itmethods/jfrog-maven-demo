@@ -6,7 +6,7 @@
 
   <groupId>com.example</groupId>
   <artifactId>maven-jfrog-demo</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
   <name>Maven JFrog Demo</name>
   <description>Sample Maven project with JFrog Artifactory integration</description>
