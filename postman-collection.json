@@ -1,0 +1,426 @@
+{
+  "info": {
+    "name": "User Management API Collection",
+    "description": "Collection for user authentication and creating users with detailed personal information",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "console.log('Starting request to: ' + pm.request.url);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.example.com",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Clear any existing auth token",
+                  "pm.collectionVariables.set('auth_token', '');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Test for successful login",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has auth token', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('token');",
+                  "    pm.expect(responseJson.token).to.be.a('string');",
+                  "    pm.expect(responseJson.token.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "// Store auth token for subsequent requests",
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', responseJson.token);",
+                  "    console.log('Auth token stored successfully');",
+                  "}",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticate user and retrieve access token"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', responseJson.token);",
+                  "    console.log('Auth token refreshed successfully');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Create User with Personal Info",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate auth token exists",
+                  "const authToken = pm.collectionVariables.get('auth_token');",
+                  "if (!authToken || authToken === '') {",
+                  "    throw new Error('No auth token found. Please login first.');",
+                  "}",
+                  "",
+                  "// Generate random data for testing",
+                  "const faker = require('faker');",
+                  "",
+                  "// Generate random user data",
+                  "pm.globals.set('random_email', faker.internet.email());",
+                  "pm.globals.set('random_phone', faker.phone.phoneNumber());",
+                  "pm.globals.set('random_ssn', faker.random.number({min: 100000000, max: 999999999}));",
+                  "pm.globals.set('random_date', faker.date.past().toISOString().split('T')[0]);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('User created successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('id');",
+                  "    pm.expect(responseJson).to.have.property('email');",
+                  "    pm.expect(responseJson).to.have.property('status');",
+                  "    pm.expect(responseJson.status).to.eql('active');",
+                  "});",
+                  "",
+                  "// Store user ID for future requests",
+                  "if (pm.response.code === 201) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('user_id', responseJson.id);",
+                  "    console.log('User created with ID: ' + responseJson.id);",
+                  "}",
+                  "",
+                  "pm.test('Response contains personal information', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('personalInfo');",
+                  "    pm.expect(responseJson.personalInfo).to.have.property('firstName');",
+                  "    pm.expect(responseJson.personalInfo).to.have.property('lastName');",
+                  "    pm.expect(responseJson.personalInfo).to.have.property('dateOfBirth');",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john.doe.{{$randomInt}}\",\n  \"email\": \"{{random_email}}\",\n  \"password\": \"SecurePassword123!\",\n  \"personalInfo\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"middleName\": \"Michael\",\n    \"dateOfBirth\": \"{{random_date}}\",\n    \"gender\": \"Male\",\n    \"nationality\": \"American\",\n    \"maritalStatus\": \"Single\"\n  },\n  \"contactInfo\": {\n    \"primaryEmail\": \"{{random_email}}\",\n    \"secondaryEmail\": \"john.doe.backup@example.com\",\n    \"primaryPhone\": \"{{random_phone}}\",\n    \"secondaryPhone\": \"+1-555-0199\",\n    \"address\": {\n      \"street\": \"123 Main Street\",\n      \"apartment\": \"Apt 4B\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zipCode\": \"10001\",\n      \"country\": \"United States\"\n    }\n  },\n  \"professionalInfo\": {\n    \"jobTitle\": \"Software Engineer\",\n    \"company\": \"Tech Corp\",\n    \"department\": \"Engineering\",\n    \"workEmail\": \"john.doe@techcorp.com\",\n    \"workPhone\": \"+1-555-0123\",\n    \"employeeId\": \"EMP{{$randomInt}}\",\n    \"startDate\": \"2023-01-15\",\n    \"salary\": 85000,\n    \"manager\": \"Jane Smith\"\n  },\n  \"identificationInfo\": {\n    \"socialSecurityNumber\": \"{{random_ssn}}\",\n    \"driversLicense\": \"DL{{$randomAlphaNumeric}}\",\n    \"passport\": {\n      \"number\": \"P{{$randomAlphaNumeric}}\",\n      \"issueDate\": \"2022-01-01\",\n      \"expiryDate\": \"2032-01-01\",\n      \"issuingCountry\": \"United States\"\n    }\n  },\n  \"preferences\": {\n    \"language\": \"English\",\n    \"timezone\": \"America/New_York\",\n    \"currency\": \"USD\",\n    \"notifications\": {\n      \"email\": true,\n      \"sms\": false,\n      \"push\": true\n    },\n    \"privacy\": {\n      \"profileVisibility\": \"private\",\n      \"dataSharing\": false,\n      \"marketingEmails\": true\n    }\n  },\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"relationship\": \"Sister\",\n    \"phone\": \"+1-555-0188\",\n    \"email\": \"jane.doe@example.com\",\n    \"address\": {\n      \"street\": \"456 Oak Avenue\",\n      \"city\": \"Boston\",\n      \"state\": \"MA\",\n      \"zipCode\": \"02101\",\n      \"country\": \"United States\"\n    }\n  },\n  \"metadata\": {\n    \"source\": \"web_registration\",\n    \"referralCode\": \"REF{{$randomAlphaNumeric}}\",\n    \"agreedToTerms\": true,\n    \"agreedToPrivacyPolicy\": true,\n    \"marketingOptIn\": false,\n    \"createdBy\": \"system\",\n    \"tags\": [\"new_user\", \"premium_candidate\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Create a new user with comprehensive personal information including contact details, professional info, identification, preferences, and emergency contact."
+          }
+        },
+        {
+          "name": "Get User Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User details retrieved', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('id');",
+                  "    pm.expect(responseJson).to.have.property('personalInfo');",
+                  "    pm.expect(responseJson).to.have.property('contactInfo');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Personal Info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User updated successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('id');",
+                  "    pm.expect(responseJson).to.have.property('updatedAt');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personalInfo\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Smith\",\n    \"middleName\": \"Michael\",\n    \"maritalStatus\": \"Married\"\n  },\n  \"contactInfo\": {\n    \"primaryPhone\": \"+1-555-0199\",\n    \"address\": {\n      \"street\": \"456 Updated Street\",\n      \"apartment\": \"Apt 5C\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zipCode\": \"10002\",\n      \"country\": \"United States\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Operations",
+      "item": [
+        {
+          "name": "Create Multiple Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Multiple users created', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('created');",
+                  "    pm.expect(responseJson.created).to.be.an('array');",
+                  "    pm.expect(responseJson.created.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"users\": [\n    {\n      \"username\": \"alice.johnson.{{$randomInt}}\",\n      \"email\": \"alice.johnson@example.com\",\n      \"password\": \"SecurePassword123!\",\n      \"personalInfo\": {\n        \"firstName\": \"Alice\",\n        \"lastName\": \"Johnson\",\n        \"dateOfBirth\": \"1990-05-15\",\n        \"gender\": \"Female\",\n        \"nationality\": \"Canadian\"\n      },\n      \"contactInfo\": {\n        \"primaryPhone\": \"+1-555-0201\",\n        \"address\": {\n          \"street\": \"789 Pine Street\",\n          \"city\": \"Toronto\",\n          \"state\": \"ON\",\n          \"zipCode\": \"M5V 3A8\",\n          \"country\": \"Canada\"\n        }\n      }\n    },\n    {\n      \"username\": \"bob.wilson.{{$randomInt}}\",\n      \"email\": \"bob.wilson@example.com\",\n      \"password\": \"SecurePassword123!\",\n      \"personalInfo\": {\n        \"firstName\": \"Bob\",\n        \"lastName\": \"Wilson\",\n        \"dateOfBirth\": \"1985-12-22\",\n        \"gender\": \"Male\",\n        \"nationality\": \"British\"\n      },\n      \"contactInfo\": {\n        \"primaryPhone\": \"+44-20-7946-0958\",\n        \"address\": {\n          \"street\": \"10 Downing Street\",\n          \"city\": \"London\",\n          \"zipCode\": \"SW1A 2AA\",\n          \"country\": \"United Kingdom\"\n        }\n      }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/bulk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "bulk"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
