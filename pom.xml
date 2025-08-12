@@ -54,29 +54,7 @@
         </configuration>
       </plugin>
       
-      <!-- JFrog Artifactory Maven Plugin -->
-      <plugin>
-        <groupId>org.jfrog.buildinfo</groupId>
-        <artifactId>artifactory-maven-plugin</artifactId>
-        <version>3.2.5</version>
-        <executions>
-          <execution>
-            <id>build-info</id>
-            <goals>
-              <goal>publish</goal>
-            </goals>
-            <configuration>
-              <publisher>
-                <contextUrl>https://your-instance.jfrog.io</contextUrl>
-                <username>${env.JFROG_USERNAME}</username>
-                <password>${env.JFROG_PASSWORD}</password>
-                <repoKey>maven-app-releases</repoKey>
-                <snapshotRepoKey>maven-app-releases</snapshotRepoKey>
-              </publisher>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+
     </plugins>
   </build>
 
@@ -86,12 +64,20 @@
       <name>GitHub Packages</name>
       <url>https://maven.pkg.github.com/vinod-itmethods/jfrog-maven-demo</url>
     </repository>
-    <repository>
-      <id>jfrog-releases</id>
-      <name>JFrog Artifactory Releases</name>
-      <url>https://your-instance.jfrog.io/artifactory/maven-app-releases</url>
-    </repository>
   </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>jfrog-deploy</id>
+      <distributionManagement>
+        <repository>
+          <id>jfrog-releases</id>
+          <name>JFrog Artifactory Releases</name>
+          <url>https://your-instance.jfrog.io/artifactory/maven-app-releases</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 
   <dependencies>
     <!-- Existing dependency -->
