@@ -1,4 +1,5 @@
 # JFrog Artifactory Authentication Best Practices
+test
 
 ## 🔐 Authentication Methods (Ranked by Security)
 
