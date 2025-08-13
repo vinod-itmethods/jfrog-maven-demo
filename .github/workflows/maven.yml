@@ -16,6 +16,9 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_ACTOR: ${{ github.actor }}
+      JFROG_USER: ${{ secrets.JFROG_USER }}
+      JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
+      JFROG_INSTANCE: artifactory.stage.0658b-techopscore.com
 
     steps:
     - name: Checkout code
