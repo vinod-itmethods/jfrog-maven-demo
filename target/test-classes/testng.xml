@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<suite name="Maven JFrog Demo Test Suite">
-    <test name="Framework Tests">
-        <classes>
-            <!-- Add test classes here when they contain @Test methods -->
-            <!-- Example: <class name="com.example.framework.BaseTestExample"/> -->
-        </classes>
-    </test>
-</suite>
