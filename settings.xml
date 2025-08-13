@@ -8,11 +8,83 @@
       <username>${env.GITHUB_ACTOR}</username>
       <password>${env.GITHUB_TOKEN}</password>
     </server>
+    
+    <!-- JFrog Artifactory Authentication - Multiple options -->
     <server>
       <id>jfrog-releases</id>
-      <username>${env.JFROG_USERNAME}</username>
-      <password>${env.JFROG_PASSWORD}</password>
+      <!-- Option 1: Username + Token (for CI/CD) -->
+      <username>${env.JFROG_USER}</username>
+      <password>${env.JFROG_TOKEN}</password>
+      
+      <!-- Option 2: API Key (most secure, recommended for production) -->
+      <!-- Uncomment and use this instead of username/token -->
+      <!-- <username>${env.JFROG_USER}</username> -->
+      <!-- <password>${env.JFROG_TOKEN}</password> -->
+      
+      <!-- Option 3: Encrypted password (for local development) -->
+      <!-- <username>${env.JFROG_USER}</username> -->
+      <!-- <password>{encrypted-password-here}</password> -->
+    </server>
+    
+    <!-- JFrog Artifactory Snapshot Repository -->
+    <server>
+      <id>jfrog-snapshots</id>
+      <username>${env.JFROG_USER}</username>
+      <password>${env.JFROG_TOKEN}</password>
+    </server>
+    
+    <!-- Maven Central Remote Repository -->
+    <server>
+      <id>maven-central</id>
+      <username>${env.JFROG_USER}</username>
+      <password>${env.JFROG_TOKEN}</password>
     </server>
   </servers>
+
+  <!-- JFrog Artifactory Repository Configuration -->
+  <profiles>
+    <profile>
+      <id>jfrog</id>
+      <repositories>
+        <repository>
+          <id>jfrog-releases</id>
+          <name>JFrog Artifactory Releases</name>
+          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-releases</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>jfrog-snapshots</id>
+          <name>JFrog Artifactory Snapshots</name>
+          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-snapshots</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>maven-central</id>
+          <name>Maven Central (Remote)</name>
+          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-central</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>jfrog</activeProfile>
+  </activeProfiles>
 
 </settings>
