@@ -37,23 +37,14 @@ mvn --encrypt-password
 
 ## 🚀 Deployment Commands
 
-### Deploy to GitHub Packages only:
+### Deploy to JFrog Artifactory:
 ```bash
 mvn clean deploy
 ```
 
-### Deploy to JFrog Artifactory only:
-```bash
-mvn clean deploy -Pjfrog-deploy
-```
-
-### Deploy to both repositories:
-```bash
-# First to GitHub
-mvn clean deploy
-# Then to JFrog
-mvn clean deploy -Pjfrog-deploy
-```
+**This will automatically deploy:**
+- **Releases** → `maven-appcode-releases` repository
+- **Snapshots** → `maven-appcode-snapshots` repository
 
 ## 🔧 Configuration Files
 
@@ -118,7 +109,10 @@ export JFROG_TOKEN="your-access-token"
 ### 3. Test Authentication
 ```bash
 # Test connection to JFrog
-mvn help:effective-settings -Pjfrog-deploy
+mvn help:effective-settings
+
+# Validate POM
+mvn validate
 ```
 
 ## 🛡️ Security Best Practices

@@ -60,29 +60,18 @@
 
   <distributionManagement>
     <repository>
-      <id>github</id>
-      <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/vinod-itmethods/jfrog-maven-demo</url>
+      <id>jfrog-releases</id>
+      <name>JFrog Artifactory Releases</name>
+      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-releases</url>
     </repository>
+    <snapshotRepository>
+      <id>jfrog-snapshots</id>
+      <name>JFrog Artifactory Snapshots</name>
+      <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-snapshots</url>
+    </snapshotRepository>
   </distributionManagement>
 
-  <profiles>
-    <profile>
-      <id>jfrog-deploy</id>
-      <distributionManagement>
-        <repository>
-          <id>jfrog-releases</id>
-          <name>JFrog Artifactory Releases</name>
-          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-releases</url>
-        </repository>
-        <snapshotRepository>
-          <id>jfrog-snapshots</id>
-          <name>JFrog Artifactory Snapshots</name>
-          <url>https://artifactory.stage.0658b-techopscore.com/artifactory/maven-appcode-snapshots</url>
-        </snapshotRepository>
-      </distributionManagement>
-    </profile>
-  </profiles>
+
 
   <dependencies>
     <!-- Existing dependency -->
